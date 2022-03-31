@@ -1,8 +1,7 @@
 
 import schedule
 
-from utils import db_init, gcal_init, notion_init, db_load
-from keep_alive import keep_alive
+from utils import keep_alive, db_init, gcal_init, notion_init, db_load
 
 
 def main():
