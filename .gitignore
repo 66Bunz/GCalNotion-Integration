@@ -133,3 +133,6 @@ dmypy.json
 .breakpoints
 *.toml
 *.lock
+
+# PyCharm
+.idea
