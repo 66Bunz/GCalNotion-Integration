@@ -131,3 +131,5 @@ dmypy.json
 # Replit
 .replit
 .breakpoints
+*.toml
+*.lock
