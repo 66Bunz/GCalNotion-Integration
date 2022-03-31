@@ -1,0 +1,17 @@
+
+# Requirements for MongoDB Database
+pymongo
+
+# Requirements for the scheduled main function
+schedule
+
+# Requirements for the Google API
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+
+# Requirements for the Notion API
+requests
+
+# Requirements for the keep_alive function
+flask
