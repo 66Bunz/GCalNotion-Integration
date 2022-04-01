@@ -1,6 +1,7 @@
 
 # Requirements for MongoDB Database
 pymongo
+dnspython
 
 # Requirements for the scheduled main function
 schedule
