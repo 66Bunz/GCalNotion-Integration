@@ -12,7 +12,6 @@ def db_init():
 		events_db, credentials_db
 	"""
 
-	# TODO: Mettere link in variabile ambientale
 	cluster = MongoClient(os.environ['mongodb_link'])
 	db_cluster = cluster[os.environ['db_cluster']]
 	events_db = db_cluster[os.environ['event_db']]
