@@ -2,7 +2,6 @@
 import schedule
 import os
 import sys
-import schedule
 import time
 
 from utils import keep_alive, db_init, gcal_init, notion_init, db_load
