@@ -34,9 +34,13 @@ def main():
     print('Starting Notion service')
     notion_database, notion_headers = notion_init(credentials_db)
 
+    db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
+
     # schedule.every(2).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db)
-    schedule.every(5).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db)
-    # schedule.every(20).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db)
+    
+	# schedule.every(5).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db)
+    
+	# schedule.every(20).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db)
 
     while True:
         schedule.run_pending()

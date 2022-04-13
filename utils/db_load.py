@@ -26,6 +26,7 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
 
         week_decrease_4 = datetime.timedelta(weeks=4)
         minLimit = now_utc - week_decrease_4
+        minLimit = now_utc
         minLimit = minLimit.isoformat() + 'Z'
         # print(minLimit)
 

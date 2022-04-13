@@ -52,7 +52,28 @@ def notion_load(event, notion_headers, notion_database, events_db):
                 # }
             }
         }
-
+    
+    event_post = {
+            "parent": {"database_id": f"{notion_database}"},
+            "properties": {
+                "Nome": {
+                    "title": [
+                        {
+                            "text": {
+                                "content": event['title']
+                            }
+                        }
+                    ]
+                },
+                "Data": {
+                    "date": {
+                        "start": event['start'],
+                        "end": event['end']
+                    }
+                },
+			}
+	}
+	
     just_posted_event = requests.post(notion_post_url, headers=notion_headers, json=event_post)
     just_posted_event = just_posted_event.json()
     # print(just_posted_event)

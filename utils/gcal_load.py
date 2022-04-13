@@ -64,7 +64,7 @@ def gcal_load(event, gcal_service, gcal_calendarid, events_db):
     maxLimit = now_utc + week_add_8
     maxLimit = maxLimit.isoformat() + 'Z'
 
-    events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=10, singleEvents=True, orderBy='startTime').execute()
+    events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=100, singleEvents=True, orderBy='startTime').execute()
     # print(events_result)
     events = events_result.get('items')
 
