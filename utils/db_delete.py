@@ -15,9 +15,9 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, ev
 
 
     for event in events_db.find():
+        print('Checking if events were deleted')
         gcal_id = event['gcalID']
         notion_id = event['notionID']
-        # notion_id = uuid.UUID(notion_id).hex
         check_notion = True
 
         read_url = f"https://api.notion.com/v1/pages/{notion_id}"
@@ -51,4 +51,7 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, ev
             else:
                 print(f'Error: {response.text}')
         else:
-            print('Error')
+            print('Already deleted from Notion')
+
+    else:
+         print('There are no events saved')

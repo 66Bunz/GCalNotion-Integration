@@ -5,9 +5,9 @@ import sys
 import time
 
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 
 from utils import keep_alive, db_init, gcal_init, notion_init, db_load, db_delete
@@ -44,6 +44,8 @@ def main():
 
     # db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
 
+    print('Running Job...')
+
     schedule.every(2).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db)
     
     schedule.every(5).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db)
@@ -61,10 +63,10 @@ def job(gcal_service, gcal_calendarid, notion_headers, notion_database, events_d
     # one_week(gcal_service, collection)
     # three_weeks(gcal_service, collection)
 
-    db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
+	db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
 
     # TODO: aggiungere limiti di ricerca
-    db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
+	db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
 
 
 if __name__ == '__main__':
