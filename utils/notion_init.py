@@ -14,6 +14,7 @@ def notion_init(credentials_db):
 
     notion_headers = {
         'Authorization': f'Bearer {notion_token}',
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Notion-Version': '2022-02-22'
     }

@@ -17,4 +17,3 @@ def db_init():
 	events_db = db_cluster[os.environ['event_db']]
 	credentials_db = db_cluster[os.environ['credentials_db']]
 	return events_db, credentials_db
-

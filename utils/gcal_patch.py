@@ -17,7 +17,6 @@ def gcal_patch(updated_event, gcal_service, gcal_calendarid, eventId):
 
     try:
         if bool(datetime.datetime.strptime(updated_event['start'], "%Y-%m-%d")):
-            # print('data')
 
             event_patch = {
                 'summary': updated_event['title'],
@@ -35,7 +34,6 @@ def gcal_patch(updated_event, gcal_service, gcal_calendarid, eventId):
             }
 
     except ValueError:
-        # print('datetime')
         event_patch = {
             'summary': updated_event['title'],
             'start': {

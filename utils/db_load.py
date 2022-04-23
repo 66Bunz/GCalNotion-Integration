@@ -1,12 +1,17 @@
 
 import datetime
+import sys
+
 import requests
 from googleapiclient.errors import HttpError
 
-import utils.gcal_load, utils.notion_load
+import utils.gcal_load
+import utils.notion_load
+
+import json
 
 
-def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, max_time=None):
+def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits):
     """
     Loads the events from Google Calendar into the MongoDB database, loads the events from Notion into the MongoDB database, then loads the differences.
 
@@ -16,26 +21,130 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
         notion_headers:
         notion_database:
         events_db:
-        max_time:
+        limits:
     """
 
-    try:
-        now_utc_iso = datetime.datetime.utcnow().isoformat() + 'Z'
-        # print(now_utc_iso)
-        now_utc = datetime.datetime.utcnow()
+    now_utc = datetime.datetime.utcnow()
 
-        week_decrease_4 = datetime.timedelta(weeks=4)
-        minLimit = now_utc - week_decrease_4
-        minLimit = now_utc
+    if limits == 'OneMin':
+        # print("OneMin")
+        week_decrease = datetime.timedelta(weeks=1)
+        minLimit = now_utc - week_decrease
         minLimit = minLimit.isoformat() + 'Z'
-        # print(minLimit)
 
-        week_add_8 = datetime.timedelta(weeks=8)
-        maxLimit = now_utc + week_add_8
+        week_add = datetime.timedelta(weeks=1)
+        maxLimit = now_utc + week_add
         maxLimit = maxLimit.isoformat() + 'Z'
-        # print(maxLimit)
 
+        filters = json.dumps(
+            {
+                "page_size": 100,
+                "filter": {
+                    "and": [
+                        {
+                            "property": "title",
+                            "rich_text": {
+                                "is_not_empty": True
+                            }
+                        },
+                        {
+                            "property": "Data",
+                            "date": {
+                                "after": minLimit
+                            }
+                        },
+                        {
+                            "property": "Data",
+                            "date": {
+                                "before": maxLimit
+                            }
+                        }
+                    ]
+                }
+            }
+        )
 
+    elif limits == 'FiveMin':
+        # print("FiveMin")
+        week_decrease = datetime.timedelta(weeks=2)
+        minLimit = now_utc - week_decrease
+        minLimit = minLimit.isoformat() + 'Z'
+
+        week_add = datetime.timedelta(weeks=3)
+        maxLimit = now_utc + week_add
+        maxLimit = maxLimit.isoformat() + 'Z'
+
+        filters = json.dumps(
+            {
+                "page_size": 100,
+                "filter": {
+                    "and": [
+                        {
+                            "property": "title",
+                            "rich_text": {
+                                "is_not_empty": True
+                            }
+                        },
+                        {
+                            "property": "Data",
+                            "date": {
+                                "after": minLimit
+                            }
+                        },
+                        {
+                            "property": "Data",
+                            "date": {
+                                "before": maxLimit
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+    elif limits == 'TwentyMin':
+        # print("TwentyMin")
+        week_decrease = datetime.timedelta(weeks=4)
+        minLimit = now_utc - week_decrease
+        minLimit = minLimit.isoformat() + 'Z'
+
+        week_add = datetime.timedelta(weeks=8)
+        maxLimit = now_utc + week_add
+        maxLimit = maxLimit.isoformat() + 'Z'
+
+        filters = json.dumps(
+            {
+                "page_size": 100,
+                "filter": {
+                    "and": [
+                        {
+                            "property": "title",
+                            "rich_text": {
+                                "is_not_empty": True
+                            }
+                        },
+                        {
+                            "property": "Data",
+                            "date": {
+                                "after": minLimit
+                            }
+                        },
+                        {
+                            "property": "Data",
+                            "date": {
+                                "before": maxLimit
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+    else:
+        print(f'Error, limits parameter gave an unexpected value: {limits}')
+        sys.exit()
+
+    try:
         print('----Searching events from GCal----')
         events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=100).execute()
 
@@ -121,23 +230,13 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
     except HttpError as error:
         raise SystemExit(error)
 
-
     # ---------------------------------------------------------------------
 
     notion_read_url = f"https://api.notion.com/v1/databases/{notion_database}/query"
 
-    # TODO: fare filtro temporale con variabile
-    filters = {
-        "page_size": 100,
-        "filter": {
-            "property": "title",
-            "rich_text": {"is_not_empty": True}
-        }
-    }
-
     try:
         print('----Searching events from Notion----')
-        response = requests.post(notion_read_url, json=filters, headers=notion_headers)
+        response = requests.post(notion_read_url, data=filters, headers=notion_headers)
         response.raise_for_status()
         events = response.json()['results']
 
@@ -229,8 +328,8 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
     for event in events_db.find():
         if event['gcalID'] is None:
             print('gcal_post')
-            utils.gcal_load(event, gcal_service, gcal_calendarid, events_db)
+            utils.gcal_load(event, gcal_service, gcal_calendarid, events_db, limits)
 
         elif event['notionID'] is None:
             print('notion_post')
-            utils.notion_load(event, notion_headers, notion_database, events_db)
+            utils.notion_load(event, notion_headers, notion_database, events_db, limits)

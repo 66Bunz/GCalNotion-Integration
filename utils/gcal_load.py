@@ -1,8 +1,9 @@
 
 import datetime
+import sys
 
 
-def gcal_load(event, gcal_service, gcal_calendarid, events_db):
+def gcal_load(event, gcal_service, gcal_calendarid, events_db, limits):
     """
     Loads events on Google Calendar.
 
@@ -11,6 +12,7 @@ def gcal_load(event, gcal_service, gcal_calendarid, events_db):
         gcal_service:
         gcal_calendarid:
         events_db:
+        limits:
     """
 
     try:
@@ -54,18 +56,41 @@ def gcal_load(event, gcal_service, gcal_calendarid, events_db):
 
     now_utc = datetime.datetime.utcnow()
 
-    # TODO: togliere minLimit e maxLimit e metterli come argomenti in integration.py
-    week_decrease_4 = datetime.timedelta(weeks=4)
-    minLimit = now_utc - week_decrease_4
-    minLimit = minLimit.isoformat() + 'Z'
-    # print(minLimit)
+    if limits == 'OneMin':
+        # print("OneMin")
+        week_decrease = datetime.timedelta(weeks=1)
+        minLimit = now_utc - week_decrease
+        minLimit = minLimit.isoformat() + 'Z'
 
-    week_add_8 = datetime.timedelta(weeks=8)
-    maxLimit = now_utc + week_add_8
-    maxLimit = maxLimit.isoformat() + 'Z'
+        week_add = datetime.timedelta(weeks=1)
+        maxLimit = now_utc + week_add
+        maxLimit = maxLimit.isoformat() + 'Z'
+
+    elif limits == 'FiveMin':
+        # print("FiveMin")
+        week_decrease = datetime.timedelta(weeks=2)
+        minLimit = now_utc - week_decrease
+        minLimit = minLimit.isoformat() + 'Z'
+
+        week_add = datetime.timedelta(weeks=3)
+        maxLimit = now_utc + week_add
+        maxLimit = maxLimit.isoformat() + 'Z'
+
+    elif limits == 'TwentyMin':
+        # print("TwentyMin")
+        week_decrease = datetime.timedelta(weeks=4)
+        minLimit = now_utc - week_decrease
+        minLimit = minLimit.isoformat() + 'Z'
+
+        week_add = datetime.timedelta(weeks=8)
+        maxLimit = now_utc + week_add
+        maxLimit = maxLimit.isoformat() + 'Z'
+
+    else:
+        print(f'Error, limits parameter gave an unexpected value: {limits}')
+        sys.exit()
 
     events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit,  maxResults=100).execute()
-    # events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=100,  orderBy='startTime').execute()
     events = events_result.get('items')
 
     if not events:
@@ -76,10 +101,6 @@ def gcal_load(event, gcal_service, gcal_calendarid, events_db):
         gcal_updated = event['updated']
         if just_posted_event['summary'] == event['summary']:
             print('Aggiungendo gcalID sul DB')
-            gcal_event = {
-                "gcalID": gcalID,
-                "gcal_updated": gcal_updated
-            }
 
             events_db.update_one({'title': just_posted_event['summary']}, {'$set': {
                 "gcalID": gcalID,

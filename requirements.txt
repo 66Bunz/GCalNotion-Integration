@@ -16,3 +16,5 @@ requests
 
 # Requirements for the keep_alive function
 flask
+
+jsonpickle

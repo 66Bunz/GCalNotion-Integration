@@ -1,7 +1,9 @@
 
 import requests
+import datetime
 
-def db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db):
+
+def db_delete(gcal_service, gcal_calendarid, notion_headers, events_db):
     """
     Deletes events on the database and from the calendars.
 
@@ -9,10 +11,8 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, ev
        gcal_service:
        gcal_calendarid:
        notion_headers:
-       notion_database:
        events_db:
     """
-
 
     for event in events_db.find():
         print('Checking if events were deleted')
@@ -29,7 +29,7 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, ev
                 "archived": True
             }
             requests.request("PATCH", read_url, json=event_patch, headers=notion_headers)
-            events_db.delete_one({"gcalID":gcal_id})
+            events_db.delete_one({"gcalID": gcal_id})
             print(f"{event['title']} was deteled in GCal, so {event['title']} was deleted from Notion and database too.")
             check_notion = False
         elif gcal_event['status'] == 'confirmed':
@@ -37,14 +37,14 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, ev
         else:
             print(f'Error: {gcal_event}')
 
-#-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         response = requests.request("GET", read_url, headers=notion_headers)
 
         if check_notion:
             if response.json()['archived'] == True:
                 gcal_service.events().delete(calendarId=gcal_calendarid, eventId=gcal_id).execute()
-                events_db.delete_one({"notionID":notion_id})
+                events_db.delete_one({"notionID": notion_id})
                 print(f"{event['title']} was deteled in Notion, so {event['title']} was deleted from GCal and database too.")
             elif response.json()['archived'] == False:
                 print("No event was deleted from Notion.")
@@ -53,5 +53,16 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, ev
         else:
             print('Already deleted from Notion')
 
+        now_utc = datetime.datetime.utcnow()
+        week_decrease = datetime.timedelta(weeks=7)
+        minLimit = now_utc - week_decrease
+        minLimit = minLimit.isoformat() + 'Z'
+
+        if event['end'] < minLimit:
+            print(f"{event['title']} was more than 7 weeks old, so it was deleted from the database and it won't be updated anymore on Google Calendar or in Notion.")
+            events_db.delete_one({"gcalID": gcal_id})
+        else:
+            print(f"{event['title']} is less than 7 weeks old, so it will be conserved on the database and it will be updated on Google Calendar or in Notion.")
+
     else:
-         print('There are no events saved')
+        print('There are no events saved')
