@@ -64,7 +64,6 @@ def main():
 def job(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits):
 
     db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database)
-
     db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits)
 
 
