@@ -64,8 +64,8 @@ def gcal_load(event, gcal_service, gcal_calendarid, events_db):
     maxLimit = now_utc + week_add_8
     maxLimit = maxLimit.isoformat() + 'Z'
 
-    events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=100, singleEvents=True, orderBy='startTime').execute()
-    # print(events_result)
+    events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit,  maxResults=100).execute()
+    # events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=100,  orderBy='startTime').execute()
     events = events_result.get('items')
 
     if not events:
@@ -74,15 +74,17 @@ def gcal_load(event, gcal_service, gcal_calendarid, events_db):
     for event in events:
         gcalID = event['id']
         gcal_updated = event['updated']
-        # print(event)
         if just_posted_event['summary'] == event['summary']:
             print('Aggiungendo gcalID sul DB')
-            # print(gcalID)
             gcal_event = {
                 "gcalID": gcalID,
                 "gcal_updated": gcal_updated
             }
-            events_db.update_one({'title': just_posted_event['summary']}, {'$set': gcal_event})
+
+            events_db.update_one({'title': just_posted_event['summary']}, {'$set': {
+                "gcalID": gcalID,
+                "gcal_updated": gcal_updated
+            }})
             print('gcalID aggiunto sul DB')
 
         else:

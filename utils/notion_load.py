@@ -106,8 +106,7 @@ def notion_load(event, notion_headers, notion_database, events_db):
             notion_updated = event['last_edited_time']
 
             # print(event)
-            if just_posted_event['properties']['Nome']['title'][0]['text']['content'] == \
-                    event['properties']['Nome']['title'][0]['text']['content']:
+            if just_posted_event['properties']['Nome']['title'][0]['text']['content'] == event['properties']['Nome']['title'][0]['text']['content']:
                 print('Aggiungendo notionID sul DB')
                 # print(notionID)
                 notion_event = {

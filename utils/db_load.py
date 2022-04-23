@@ -35,8 +35,9 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
         maxLimit = maxLimit.isoformat() + 'Z'
         # print(maxLimit)
 
+
         print('----Searching events from GCal----')
-        events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=10, singleEvents=True, orderBy='startTime').execute()
+        events_result = gcal_service.events().list(calendarId=gcal_calendarid, timeMin=minLimit, timeMax=maxLimit, maxResults=100).execute()
 
         events = events_result.get('items')
 
@@ -118,9 +119,10 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
                 print('------')
 
     except HttpError as error:
-        print(f'An error occurred: {error}')
+        raise SystemExit(error)
 
-        print('------')
+
+    # ---------------------------------------------------------------------
 
     notion_read_url = f"https://api.notion.com/v1/databases/{notion_database}/query"
 
@@ -222,8 +224,7 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
             print('------')
 
     except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as error:
-        print(f'An error occurred: {error}')
-        print('------')
+        raise SystemExit(error)
 
     for event in events_db.find():
         if event['gcalID'] is None:

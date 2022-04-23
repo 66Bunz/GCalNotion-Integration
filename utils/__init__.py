@@ -6,6 +6,7 @@ from .db_init import db_init
 from .gcal_init import gcal_init
 from .notion_init import notion_init
 from .db_load import db_load
+from .db_delete import db_delete
 
 from .gcal_load import gcal_load
 from .notion_load import notion_load
