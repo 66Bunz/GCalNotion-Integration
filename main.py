@@ -4,6 +4,10 @@ import os
 import sys
 import time
 
+# from dotenv import load_dotenv
+#
+# load_dotenv()
+
 from utils import keep_alive, db_init, gcal_init, notion_init, db_load, db_delete
 
 
@@ -38,10 +42,8 @@ def main():
     print('Starting Notion service')
     notion_database, notion_headers = notion_init(credentials_db)
 
-
-    # db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
-
-    # db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits="TwentyMin")
+    # db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database)
+    # db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits="OneMin")
 
     print('Running Job...')
 
