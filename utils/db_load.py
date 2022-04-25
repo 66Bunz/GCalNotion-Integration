@@ -31,10 +31,12 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
         week_decrease = datetime.timedelta(weeks=1)
         minLimit = now_utc - week_decrease
         minLimit = minLimit.isoformat() + 'Z'
+        print(minLimit)
 
         week_add = datetime.timedelta(weeks=1)
         maxLimit = now_utc + week_add
         maxLimit = maxLimit.isoformat() + 'Z'
+        print(maxLimit)
 
         filters = json.dumps(
             {
@@ -154,78 +156,82 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
             print('No upcoming events found from GCal.')
             print('------')
         for event in events:
-            gcalID = event['id']
-            created = event['created']
-            gcal_updated = event['updated']
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            end = event['end'].get('dateTime', event['end'].get('date'))
-            title = event['summary']
-
-            if event.get('description', None):
-                description = event['description']
+            if event['status'] != 'cancelled':
+	            # print(event)
+	            gcalID = event['id']
+	            created = event['created']
+	            gcal_updated = event['updated']
+	            start = event['start'].get('dateTime', event['start'].get('date'))
+	            end = event['end'].get('dateTime', event['end'].get('date'))
+	            title = event['summary']
+	
+	            if event.get('description', None):
+	                description = event['description']
+	            else:
+	                description = None
+	            if event.get('colorId', None):
+	                color = f"{event['colorId']}"
+	            else:
+	                color = None
+	            if event.get('location', None):
+	                location = event['location']
+	            else:
+	                location = None
+	
+	            gcal_event = {
+	                "gcalID": gcalID,
+	                "notionID": None,
+	                "created": created,
+	                "gcal_updated": gcal_updated,
+	                "notion_updated": None,
+	                "start": start,
+	                "end": end,
+	                "title": title,
+	                "description": description,
+	                "color": color,
+	                "location": location,
+	                # "reminder": "",
+	            }
+	
+	            gcal_event_update = {
+	                "gcalID": gcalID,
+	                "created": created,
+	                "gcal_updated": gcal_updated,
+	                "start": start,
+	                "end": end,
+	                "title": title,
+	                "description": description,
+	                "color": color,
+	                "location": location,
+	                # "reminder": "",
+	            }
+	
+	            print('----')
+	
+	            if events_db.find_one({'gcalID': gcal_event['gcalID']}) is None:
+	                events_db.insert_one(gcal_event)
+	                print(f'Event {title} of {start} added to DB')
+	            else:
+	                print(f'Event {title} of {start} was already saved in DB')
+	
+	                print('\nChecking if there are updates on GCal')
+	
+	                if gcal_updated != events_db.find_one({'gcalID': gcal_event['gcalID']})['gcal_updated']:
+	
+	                    events_db.update_one({'gcalID': gcal_event['gcalID']}, {'$set': gcal_event_update})
+	                    print(f'{title} was updated on DB')
+	                    updated_event = events_db.find_one({'gcalID': gcal_event['gcalID']})
+	                    gcalId = updated_event['gcalID']
+	                    notionId = updated_event['notionID']
+	                    utils.gcal_patch(updated_event, gcal_service, gcal_calendarid, gcalId)
+	                    utils.notion_patch(updated_event, notion_headers, notion_database, notionId)
+	
+	                else:
+	                    print(f'{title} is up to date on the DB')
+	
+	                print('------')
             else:
-                description = None
-            if event.get('colorId', None):
-                color = f"{event['colorId']}"
-            else:
-                color = None
-            if event.get('location', None):
-                location = event['location']
-            else:
-                location = None
-
-            gcal_event = {
-                "gcalID": gcalID,
-                "notionID": None,
-                "created": created,
-                "gcal_updated": gcal_updated,
-                "notion_updated": None,
-                "start": start,
-                "end": end,
-                "title": title,
-                "description": description,
-                "color": color,
-                "location": location,
-                # "reminder": "",
-            }
-
-            gcal_event_update = {
-                "gcalID": gcalID,
-                "created": created,
-                "gcal_updated": gcal_updated,
-                "start": start,
-                "end": end,
-                "title": title,
-                "description": description,
-                "color": color,
-                "location": location,
-                # "reminder": "",
-            }
-
-            print('----')
-
-            if events_db.find_one({'gcalID': gcal_event['gcalID']}) is None:
-                events_db.insert_one(gcal_event)
-                print(f'Event {title} of {start} added to DB')
-            else:
-                print(f'Event {title} of {start} was already saved in DB')
-
-                print('\nChecking if there are updates on GCal')
-
-                if gcal_updated != events_db.find_one({'gcalID': gcal_event['gcalID']})['gcal_updated']:
-
-                    events_db.update_one({'gcalID': gcal_event['gcalID']}, {'$set': gcal_event_update})
-                    print(f'{title} was updated on DB')
-                    updated_event = events_db.find_one({'gcalID': gcal_event['gcalID']})
-                    gcalId = updated_event['gcalID']
-                    notionId = updated_event['notionID']
-                    utils.gcal_patch(updated_event, gcal_service, gcal_calendarid, gcalId)
-                    utils.notion_patch(updated_event, notion_headers, notion_database, notionId)
-
-                else:
-                    print(f'{title} is up to date on the DB')
-
-                print('------')
+                pass
 
     except HttpError as error:
         raise SystemExit(error)
@@ -236,7 +242,7 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
 
     try:
         print('----Searching events from Notion----')
-        response = requests.post(notion_read_url, data=filters, headers=notion_headers)
+        response = requests.post(notion_read_url, json=filters, headers=notion_headers)
         response.raise_for_status()
         events = response.json()['results']
 

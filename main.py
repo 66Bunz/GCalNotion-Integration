@@ -38,6 +38,7 @@ def main():
     print('Starting Notion service')
     notion_database, notion_headers = notion_init(credentials_db)
 
+
     # db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db)
 
     # db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits="TwentyMin")
@@ -48,7 +49,7 @@ def main():
         job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="OneMin"
         )
 
-    schedule.every(5).minutes.do(
+    schedule.every(7).minutes.do(
         job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="FiveMin"
         )
 

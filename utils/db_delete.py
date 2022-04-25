@@ -2,6 +2,10 @@
 import requests
 import datetime
 
+import os
+import pymongo
+from pymongo import MongoClient
+
 
 def db_delete(gcal_service, gcal_calendarid, notion_headers, events_db):
     """
@@ -14,6 +18,11 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, events_db):
        events_db:
     """
 
+
+    cluster = MongoClient(os.environ['mongodb_link'])
+    db_cluster = cluster[os.environ['db_cluster']]
+    events_db = db_cluster[os.environ['event_db']]
+		
     for event in events_db.find():
         print('Checking if events were deleted')
         gcal_id = event['gcalID']
@@ -40,6 +49,7 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, events_db):
         # -----------------------------------------------------------------------
 
         response = requests.request("GET", read_url, headers=notion_headers)
+        print(response)
 
         if check_notion:
             if response.json()['archived'] == True:
