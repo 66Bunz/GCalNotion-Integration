@@ -26,8 +26,8 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
 
     now_utc = datetime.datetime.utcnow()
 
-    if limits == 'OneMin':
-        # print("OneMin")
+    if limits == 'TwoMin':
+        # print("TwoMin")
         week_decrease = datetime.timedelta(weeks=1)
         minLimit = now_utc - week_decrease
         minLimit = minLimit.isoformat() + 'Z'
@@ -66,8 +66,8 @@ def db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, even
             }
         )
 
-    elif limits == 'FiveMin':
-        # print("FiveMin")
+    elif limits == 'SevenMin':
+        # print("SevenMin")
         week_decrease = datetime.timedelta(weeks=2)
         minLimit = now_utc - week_decrease
         minLimit = minLimit.isoformat() + 'Z'

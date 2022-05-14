@@ -1,8 +1,10 @@
 
-import schedule
+#import schedule
 import os
 import sys
 import time
+#import threading
+from datetime import datetime
 
 # from dotenv import load_dotenv
 #
@@ -19,10 +21,10 @@ def authenticate():
     print("To use this app you need to authenticate yourself")
     print("Insert the password below:")
     pwd = input()
-    print(pwd)
-    print(os.environ['repl_pwd'])
+    # print(pwd)
+    # print(os.environ['repl_pwd'])
     if pwd == os.environ['repl_pwd']:
-        print('Correct password... Loading Flask Server and starting the main funtion...')
+        print('Correct password... Loading Flask Server and starting the main function...')
         keep_alive()
         main()
     else:
@@ -47,28 +49,23 @@ def main():
 
     print('Running Job...')
 
-    schedule.every(1).minutes.do(
-        job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="OneMin"
-        )
+    #schedule.every(2).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="OneMin")
 
-    schedule.every(7).minutes.do(
-        job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="FiveMin"
-        )
+    #schedule.every(7).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="FiveMin")
 
-    schedule.every(20).minutes.do(
-        job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="TwentyMin"
-        )
-
+    #schedule.every(20).minutes.do(job, gcal_service=gcal_service, gcal_calendarid=gcal_calendarid, notion_headers=notion_headers, notion_database=notion_database, events_db=events_db, limits="TwentyMin")
+    
     while True:
-        schedule.run_pending()
-        time.sleep(1)
+        db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database)
+        db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits="TwentyMin")
+        time.sleep(5)
+		
 
-
-def job(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits):
-    db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database)
-    db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits)
+#def job(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits):
+    #db_delete(gcal_service, gcal_calendarid, notion_headers, notion_database)
+    #db_load(gcal_service, gcal_calendarid, notion_headers, notion_database, events_db, limits)
 
 
 if __name__ == '__main__':
     authenticate()
-    main()
+    # main()
