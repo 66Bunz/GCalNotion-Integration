@@ -81,7 +81,7 @@ def notion_load(event, notion_headers, notion_database, events_db, limits):
     just_posted_event = requests.post(notion_post_url, headers=notion_headers, json=event_post)
     just_posted_event = just_posted_event.json()
     # print(just_posted_event)
-    print(f'Evento creato su Notion')
+    print(f'Evento {event["title"]} creato su Notion')
 
     # ---------------------------------------------------
 
@@ -210,19 +210,30 @@ def notion_load(event, notion_headers, notion_database, events_db, limits):
     try:
         events_result = requests.post(notion_read_url, data=filters, headers=notion_headers)
         events_result.raise_for_status()
-        events = events_result.json()['results']
+        events_list = events_result.json()['results']
         # print(events)
 
-        if not events:
+        if not events_list:
             print('No events found.')
 
-        for event in events:
+        for event_list in events_list:
             # print(event)
-            notionID = event['id']
-            notion_updated = event['last_edited_time']
+            notionID = event_list['id']
+            notion_updated = event_list['last_edited_time']
 
             # print(event)
-            if just_posted_event['properties']['Nome']['title'][0]['text']['content'] == event['properties']['Nome']['title'][0]['text']['content']:
+            # TODO: PROBLEMA, SE LI CERCO TRAMITE IL TITOLO E CI SONO EVENTI RICORRENTI FANNO CASINO PER GLI ID DA METTERE SUL DB, basta aggiungere un check per la data dell'evento
+
+            print("start")
+            print(event_post['properties']['Data']['date']['start'])
+            print(event['start'])
+
+            print("end")
+            print(event_post['properties']['Data']['date']['end'])
+            print(event['end'])
+
+
+            if event_post['properties']['Nome']['title'][0]['text']['content'] == event['properties']['Nome']['title'][0]['text']['content'] and event_post['properties']['Data']['date']['start'] == event['start'] and event_post['properties']['Data']['date']['end'] == event['end']:
                 print('Aggiungendo notionID sul DB')
                 # print(notionID)
                 notion_event = {

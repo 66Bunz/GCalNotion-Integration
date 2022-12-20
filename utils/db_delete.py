@@ -46,33 +46,38 @@ def db_delete(gcal_service, gcal_calendarid, notion_headers, events_db):
         else:
             print(f'Error: {gcal_event}')
 
-        # -----------------------------------------------------------------------
+# -----------------------------------------------------------------------
+        try:
+            response = requests.request("GET", read_url, headers=notion_headers)
+            print(response)
+            response.raise_for_status()
+            print(response)
 
-        response = requests.request("GET", read_url, headers=notion_headers)
-        print(response)
-
-        if check_notion:
-            if response.json()['archived'] == True:
-                gcal_service.events().delete(calendarId=gcal_calendarid, eventId=gcal_id).execute()
-                events_db.delete_one({"notionID": notion_id})
-                print(f"{event['title']} was deteled in Notion, so {event['title']} was deleted from GCal and database too.")
-            elif response.json()['archived'] == False:
-                print("No event was deleted from Notion.")
+            if check_notion:
+                if response.json()['archived'] == True:
+                    gcal_service.events().delete(calendarId=gcal_calendarid, eventId=gcal_id).execute()
+                    events_db.delete_one({"notionID": notion_id})
+                    print(f"{event['title']} was deteled in Notion, so {event['title']} was deleted from GCal and database too.")
+                elif response.json()['archived'] == False:
+                    print("No event was deleted from Notion.")
+                else:
+                    print(f'Error: {response.text}')
             else:
-                print(f'Error: {response.text}')
-        else:
-            print('Already deleted from Notion')
+                print('Already deleted from Notion')
 
-        now_utc = datetime.datetime.utcnow()
-        week_decrease = datetime.timedelta(weeks=7)
-        minLimit = now_utc - week_decrease
-        minLimit = minLimit.isoformat() + 'Z'
+            now_utc = datetime.datetime.utcnow()
+            week_decrease = datetime.timedelta(weeks=7)
+            minLimit = now_utc - week_decrease
+            minLimit = minLimit.isoformat() + 'Z'
 
-        if event['end'] < minLimit:
-            print(f"{event['title']} was more than 7 weeks old, so it was deleted from the database and it won't be updated anymore on Google Calendar or in Notion.")
-            events_db.delete_one({"gcalID": gcal_id})
-        else:
-            print(f"{event['title']} is less than 7 weeks old, so it will be conserved on the database and it will be updated on Google Calendar or in Notion.")
+            if event['end'] < minLimit:
+                print(f"{event['title']} was more than 7 weeks old, so it was deleted from the database and it won't be updated anymore on Google Calendar or in Notion.")
+                events_db.delete_one({"gcalID": gcal_id})
+            else:
+                print(f"{event['title']} is less than 7 weeks old, so it will be conserved on the database and it will be updated on Google Calendar or in Notion.")
+
+        except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as error:
+            raise SystemExit(error)
 
     else:
         print('There are no events saved')

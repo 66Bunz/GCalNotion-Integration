@@ -21,10 +21,8 @@ def authenticate():
     print("To use this app you need to authenticate yourself")
     print("Insert the password below:")
     pwd = input()
-    # print(pwd)
-    # print(os.environ['repl_pwd'])
     if pwd == os.environ['repl_pwd']:
-        print('Correct password... Loading Flask Server and starting the main function...')
+        print('Correct password... Loading Flask server and starting the main function...')
         keep_alive()
         main()
     else:
@@ -67,5 +65,5 @@ def main():
 
 
 if __name__ == '__main__':
-    authenticate()
-    # main()
+    # authenticate()
+    main()
